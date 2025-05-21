@@ -15,6 +15,7 @@ class _App extends StatelessWidget {
         fontFamily: 'NotoSans',
       ),
       debugShowCheckedModeBanner: false,
+      //첫화면은 로딩화면 보여주며 로그인 검증
       home: SplashScreen(),
     );
   }
