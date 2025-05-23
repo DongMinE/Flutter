@@ -29,7 +29,6 @@ class _SplashScreenState extends State<SplashScreen> {
   void checkToken() async {
     final refreshToken = await storage.read(key: REFRESH_TOKEN_KEY);
     final accessToken = await storage.read(key: ACCESS_TOKEN_KEY);
-    print('refreshToken: $refreshToken');
     final dio = Dio();
 
     try {
@@ -64,7 +63,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return DefaultLayout(
-      backgroundColor: PRIMART_COLOR,
+      backgroundColor: PRIMARY_COLOR,
       child: SizedBox(
         width: MediaQuery.of(context).size.width,
         child: Column(

@@ -141,7 +141,7 @@ class _IconText extends StatelessWidget {
       children: [
         Icon(
           icon,
-          color: PRIMART_COLOR,
+          color: PRIMARY_COLOR,
           size: 14.0,
         ),
         const SizedBox(width: 8.0),

@@ -39,22 +39,9 @@ class _RootTabState extends State<RootTab> with SingleTickerProviderStateMixin {
   Widget build(BuildContext context) {
     return DefaultLayout(
       title: '코팩 딜러버리',
-      //child는 맨 마지막에 넣는걸 추천
-      //child container는 없어도 되는 듯
-      //TabBarView: 한화면에서 탭이동 가능한 화면
-      child: TabBarView(
-        physics: NeverScrollableScrollPhysics(),
-        controller: controller,
-        children: [
-          RestaurantScreen(),
-          Center(child: Container(child: Text('음식'))),
-          Center(child: Container(child: Text('주문'))),
-          Center(child: Container(child: Text('프로필'))),
-        ],
-      ),
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: BODY_BORDER_COLOR,
-        selectedItemColor: PRIMART_COLOR,
+        selectedItemColor: PRIMARY_COLOR,
         unselectedItemColor: BODY_TEXT_COLOR,
         selectedFontSize: 10,
         unselectedFontSize: 10,
@@ -84,6 +71,19 @@ class _RootTabState extends State<RootTab> with SingleTickerProviderStateMixin {
             icon: Icon(Icons.person_outline),
             label: '프로필',
           ),
+        ],
+      ),
+      //child는 맨 마지막에 넣는걸 추천
+      //child container는 없어도 되는 듯
+      //TabBarView: 한화면에서 탭이동 가능한 화면
+      child: TabBarView(
+        physics: NeverScrollableScrollPhysics(),
+        controller: controller,
+        children: [
+          RestaurantScreen(),
+          Center(child: Container(child: Text('음식'))),
+          Center(child: Container(child: Text('주문'))),
+          Center(child: Container(child: Text('프로필'))),
         ],
       ),
     );

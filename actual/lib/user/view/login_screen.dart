@@ -71,8 +71,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     );
                     final refreshToken = resp.data['refreshToken'];
                     final accessToken = resp.data['accessToken'];
-                    print('token: $token');
-                    print('refreshToken : $refreshToken');
                     await storage.write(
                         key: REFRESH_TOKEN_KEY, value: refreshToken);
                     await storage.write(
@@ -85,7 +83,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    foregroundColor: PRIMART_COLOR,
+                    foregroundColor: PRIMARY_COLOR,
                   ),
                   child: Text(
                     '로그인',

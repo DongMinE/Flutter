@@ -80,7 +80,7 @@ class ProductCard extends StatelessWidget {
                   '$price',
                   textAlign: TextAlign.right,
                   style: TextStyle(
-                    color: PRIMART_COLOR,
+                    color: PRIMARY_COLOR,
                     fontSize: 12.0,
                     fontWeight: FontWeight.w500,
                   ),
