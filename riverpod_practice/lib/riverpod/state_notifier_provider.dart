@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_practice/model/shopping_item_model.dart';
 
-final shoppigListProvider =
+final shoppingListProvider =
 // 어떤 notifier인지와 해당 notifier가 관리하는 상태값
     StateNotifierProvider<ShoppingListNotifier, List<ShoppingItemModel>>(
   (ref) => ShoppingListNotifier(),

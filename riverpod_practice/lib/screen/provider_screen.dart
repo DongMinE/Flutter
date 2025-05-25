@@ -12,7 +12,7 @@ class ProviderScreen extends ConsumerWidget {
     // ref하고 있는 것은 filterShoppngListPrivider인데
     // 그 안의 shoppngListProvider를 변경해도 state가 바뀜
     // 맵기 정보 탭 변경에 따라 리스트가 변경
-    final state = ref.watch(filterShoppngListProvider);
+    final state = ref.watch(filterShoppingListProvider);
 
     return DefaultLayout(
       title: "ProviderScreen",
@@ -40,7 +40,7 @@ class ProviderScreen extends ConsumerWidget {
                 // shoppngListProvider에 만들어둔 toggleHasBougth
                 onChanged: (value) {
                   ref
-                      .read(shoppigListProvider.notifier)
+                      .read(shoppingListProvider.notifier)
                       .toggleHasBougth(name: e.name);
                 },
               ),
