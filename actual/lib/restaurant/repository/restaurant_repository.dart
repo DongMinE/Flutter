@@ -1,4 +1,7 @@
+import 'package:actual/common/const/data.dart';
+import 'package:actual/common/dio/dio.dart';
 import 'package:actual/common/model/cursor_pagination_model.dart';
+import 'package:actual/common/model/pagination_params.dart';
 import 'package:actual/restaurant/model/restaurant_detail_model.dart';
 import 'package:actual/restaurant/model/restaurant_model.dart';
 /*
@@ -8,11 +11,23 @@ import 'package:actual/restaurant/model/restaurant_model.dart';
  hide 하지 않고 위의 dio.~으로 사용해서도 가능
 */
 import 'package:dio/dio.dart' hide Headers;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:retrofit/retrofit.dart';
 
 // g파일이 생성될 때 errorLogger가 에러가 나는 이유는 import기반으로 생성될 때 필요한
 // import가 없어서 발생하므로 "import 'package:retrofit/retrofit.dart';" 추가
 part 'restaurant_repository.g.dart';
+
+final restaurantRepositoryProvider = Provider<RestaurantRepository>(
+  (ref) {
+    final dio = ref.watch(dioProvider);
+
+    final repository =
+        RestaurantRepository(dio, baseUrl: 'http://$ip/restaurant');
+
+    return repository;
+  },
+);
 
 @RestApi()
 //RestApi는 retrofit 인터페이스임을 알리며 g.dart 코드가 생성되는 트리거
@@ -27,7 +42,9 @@ abstract class RestaurantRepository {
   })
   // cursor_pagination_model에서 선언한 CursorPagination의 data타입을 명시하면
   // T가 자동으로 RestaurantDetailModel으로 변환
-  Future<CursorPagination<RestaurantModel>> paginate();
+  Future<CursorPagination<RestaurantModel>> paginate({
+    @Queries() PaginationParams? paginationParams = const PaginationParams(),
+  });
 
   // id의 제품 목록
   @GET('/{id}')
