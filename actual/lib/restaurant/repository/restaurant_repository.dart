@@ -2,6 +2,7 @@ import 'package:actual/common/const/data.dart';
 import 'package:actual/common/dio/dio.dart';
 import 'package:actual/common/model/cursor_pagination_model.dart';
 import 'package:actual/common/model/pagination_params.dart';
+import 'package:actual/common/repository/base_pagination_repository.dart';
 import 'package:actual/restaurant/model/restaurant_detail_model.dart';
 import 'package:actual/restaurant/model/restaurant_model.dart';
 /*
@@ -31,11 +32,14 @@ final restaurantRepositoryProvider = Provider<RestaurantRepository>(
 
 @RestApi()
 //RestApi는 retrofit 인터페이스임을 알리며 g.dart 코드가 생성되는 트리거
-abstract class RestaurantRepository {
+// IBasePaginationRepository의 paginate구현체
+abstract class RestaurantRepository
+    implements IBasePaginationRepository<RestaurantModel> {
   factory RestaurantRepository(Dio dio, {String baseUrl}) =
       _RestaurantRepository;
 
   //레스토랑 리스트
+  @override
   @GET('/')
   @Headers({
     'accessToken': 'true',

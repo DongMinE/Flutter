@@ -7,7 +7,6 @@ import 'package:actual/user/view/login_screen.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -33,7 +32,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   void checkToken() async {
     final storage = ref.read(secureStorageProvider);
     final refreshToken = await storage.read(key: REFRESH_TOKEN_KEY);
-    final accessToken = await storage.read(key: ACCESS_TOKEN_KEY);
+    // final accessToken = await storage.read(key: ACCESS_TOKEN_KEY);
     final dio = Dio();
 
     try {

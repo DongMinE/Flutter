@@ -1,3 +1,4 @@
+import 'package:actual/common/model/model_with_id.dart';
 import 'package:actual/common/utils/data_utils.dart';
 import 'package:json_annotation/json_annotation.dart';
 //g이름을 넣고 flutter pub run build_runner build 하면 자동으로 factory생성, nest
@@ -10,7 +11,8 @@ enum RestaurantPriceRange {
 }
 
 @JsonSerializable()
-class RestaurantModel {
+class RestaurantModel implements IModelWithId {
+  @override
   final String id;
   final String name;
   //fromJson이 자동 생성된 값을 커스텀해야 할 때

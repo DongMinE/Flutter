@@ -1,12 +1,19 @@
 import 'package:actual/common/layout/default_layout.dart';
+import 'package:actual/common/model/cursor_pagination_model.dart';
+import 'package:actual/common/utils/pagination_utils.dart';
 import 'package:actual/product/component/product_card.dart';
+import 'package:actual/rating/component/rating_card.dart';
+import 'package:actual/rating/model/rating_model.dart';
 import 'package:actual/restaurant/component/restaurant_card.dart';
 import 'package:actual/restaurant/model/restaurant_detail_model.dart';
-import 'package:actual/restaurant/repository/restaurant_repository.dart';
+import 'package:actual/restaurant/model/restaurant_model.dart';
+import 'package:actual/restaurant/provider/restaurant_provider.dart';
+import 'package:actual/restaurant/provider/restaurant_rating_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
-class RestaurantDetailScreen extends ConsumerWidget {
+class RestaurantDetailScreen extends ConsumerStatefulWidget {
   final String id;
   final String name;
 
@@ -16,76 +23,126 @@ class RestaurantDetailScreen extends ConsumerWidget {
     super.key,
   });
 
-  // Future<RestaurantDetailModel> getRestaurantDetail(WidgetRef ref) async {
-  /*
-    1. 처음방식
-    아래의 코드로 사용해야하는걸 retrofit를 사용해 api요청을 자동화 하며
-    repository에 dio와 url을 명시하고 getRestaurantDetail을 반환받음
-  */
-  // final accessToken = await storage.read(key: ACCESS_TOKEN_KEY);
-  // final resp = await dio.get(
-  //   'http://$ip/restaurant/$id',
-  //   options: Options(
-  //     headers: {
-  //       'authorization': 'Bearer $accessToken',
-  //     },
-  //   ),
-  // );
-  // return resp.data;
+  @override
+  ConsumerState<RestaurantDetailScreen> createState() =>
+      _RestaurantDetailScreenState();
+}
 
-  /*
-      2. provider를 사용해 watch로 동일한 인스턴스 사용하기
-  */
-  // final dio = ref.watch(dioProvider);
-  // final repository =
-  //     RestaurantRepository(dio, baseUrl: 'http://$ip/restaurant');
-  // return repository.getRestaurantDetail(id: id);
-
-  /* 
-    3. repository에서 dio를 한번만 호출하여 통일한 방식
-  */
-  // 아래의 코드를 build의 future부분에 직접 넣기
-  // return ref.watch(restaurantRepositoryProvider).getRestaurantDetail(id: id);
-  // }
+class _RestaurantDetailScreenState
+    extends ConsumerState<RestaurantDetailScreen> {
+  final ScrollController controller = ScrollController();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return DefaultLayout(
-      title: name,
-      //retrofit으로 반환받는 타입이 RestaurantDetailModel이므로 Map(String, dynamic)이 아님
-      child: FutureBuilder<RestaurantDetailModel>(
-        future: ref.watch(restaurantRepositoryProvider).getRestaurantDetail(
-              id: id,
-            ),
-        builder: (_, AsyncSnapshot<RestaurantDetailModel> snapshot) {
-          if (snapshot.hasError) {
-            return Center(
-              child: Text(snapshot.error.toString()),
-            );
-          }
+  void initState() {
+    super.initState();
+    ref.read(restaurantProvider.notifier).getDetail(id: widget.id);
+    controller.addListener(listener);
+  }
 
-          if (!snapshot.hasData) {
-            return Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-          /* 
-            item을 명시하는 이유는 fromJson을 직접 파싱해줘야 했는데
-            retrofit을 사용해서 g파일 내부에서 return값이 FromJson을 해준 값
-          */
-          // final item = RestaurantDetailModel.fromJson(snapshot.data!);
-          return CustomScrollView(
-            //Sliver는 ListView에 비해 유연하며 복잡할수록 유리
-            //Sliver는 CustomScrollView와 함께 사용
-            slivers: [
-              renderTop(
-                model: snapshot.data!,
+// PaginationUtils에 paginate oop 함
+  void listener() {
+    PaginationUtils.paginate(
+        controller: controller,
+        provider: ref.read(restaurantRatingProvider(widget.id).notifier));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    //전체 리스트 중 id에 맞는 가게만 가져와서 디테일 화면에 로딩이 없음(이미 있음)
+    final state = ref.watch(restaurantDetailProvider(widget.id));
+    final ratingsState = ref.watch(restaurantRatingProvider(widget.id));
+
+    if (state == null) {
+      return DefaultLayout(
+        child: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+    return DefaultLayout(
+      title: widget.name,
+      //retrofit으로 반환받는 타입이 RestaurantDetailModel이므로 Map(String, dynamic)이 아님
+      child: CustomScrollView(
+        controller: controller,
+        //Sliver는 ListView에 비해 유연하며 복잡할수록 유리
+        //Sliver는 CustomScrollView와 함께 사용
+        slivers: [
+          renderTop(
+            model: state,
+          ),
+          if (state is! RestaurantDetailModel) renderLoading(),
+          if (state is RestaurantDetailModel) renderLabel(),
+          if (state is RestaurantDetailModel)
+            renderProduct(products: state.products),
+          if (ratingsState is CursorPagination<RatingModel>)
+            renderRatings(
+              models: ratingsState.data,
+            ),
+        ],
+      ),
+    );
+  }
+
+  SliverPadding renderRatings({
+    required List<RatingModel> models,
+  }) {
+    return SliverPadding(
+      padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+      sliver: SliverList(
+        delegate: SliverChildBuilderDelegate(
+          (_, index) => Padding(
+            padding: const EdgeInsets.only(bottom: 16.0),
+            child: RatingCard.fromModel(
+              model: models[index],
+            ),
+          ),
+          childCount: models.length,
+        ),
+      ),
+    );
+  }
+
+  SliverPadding renderLoading() {
+    return SliverPadding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      sliver: SliverList(
+        delegate: SliverChildListDelegate(
+          List.generate(
+            5,
+            (index) => Skeletonizer(
+              enabled: true,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12.0),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                    ),
+                    const SizedBox(width: 16.0),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('메뉴 이름'),
+                          const SizedBox(height: 8),
+                          Text('메뉴 설명입니다. 두줄도가능합니다.'),
+                          const SizedBox(height: 8),
+                          Text('10000'),
+                        ],
+                      ),
+                    )
+                  ],
+                ),
               ),
-              renderLabel(),
-              renderProduct(products: snapshot.data!.products),
-            ],
-          );
-        },
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -107,7 +164,7 @@ class RestaurantDetailScreen extends ConsumerWidget {
 
   //Sliver의 자식은 Sliver만 받을 수 있으며 일반 위젯을 넣기위해서는 SliverToBoxAdapter가 필요
   SliverToBoxAdapter renderTop({
-    required RestaurantDetailModel model,
+    required RestaurantModel model,
   }) {
     return SliverToBoxAdapter(
       child: RestaurantCard.fromModel(
