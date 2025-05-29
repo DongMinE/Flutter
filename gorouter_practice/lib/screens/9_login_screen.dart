@@ -1,15 +1,40 @@
 import 'package:flutter/material.dart';
+import 'package:gorouter_practice/layout/default_layout.dart';
+import 'package:go_router/go_router.dart';
+import 'package:gorouter_practice/route/router.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
   @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 2,
-      child: ListView(
+    return DefaultLayout(
+      body: ListView(
         children: [
-          ElevatedButton(onPressed: () {}, child: Text('Go to private Route'))
+          Text('Login Screen : $authState'),
+          ElevatedButton(
+            onPressed: () {
+              setState(() {
+                authState = !authState;
+              });
+            },
+            child: Text(authState ? 'logout' : 'login'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (GoRouterState.of(context).uri.path == '/login') {
+                context.go('/login/private');
+              } else {
+                context.go('/login2/private');
+              }
+            },
+            child: Text('Go to Private Route'),
+          ),
         ],
       ),
     );

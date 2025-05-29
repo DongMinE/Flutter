@@ -13,7 +13,6 @@ class _App extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       routerConfig: router,
-      title: 'Flutter Demo',
     );
   }
 }

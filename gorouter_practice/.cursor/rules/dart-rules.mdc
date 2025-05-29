@@ -3,4 +3,8 @@ description:
 globs: 
 alwaysApply: false
 ---
-Always respond in Korean
+## 답변방식
+-- **답변은 항상 한글로 해주세요.**
+
+## agent나 자동완성 방식
+-- **플러터 기반의 코드일 경우 가독성을 위해 괄호의 끝 지점엔 ,(쉼표)를 추가해 주세요.**
