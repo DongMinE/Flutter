@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../../TestServer/flutter-lv2-server-main"
+		}
+	],
+	"settings": {}
+}

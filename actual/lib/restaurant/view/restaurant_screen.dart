@@ -1,12 +1,10 @@
-import 'package:actual/common/model/cursor_pagination_model.dart';
-import 'package:actual/common/utils/pagination_utils.dart';
+import 'package:actual/common/component/pagination_list_view.dart';
 import 'package:actual/restaurant/component/restaurant_card.dart';
 import 'package:actual/restaurant/provider/restaurant_provider.dart';
 import 'package:actual/restaurant/view/restaurant_detail_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class RestaurantScreen extends ConsumerStatefulWidget {
+class RestaurantScreen extends StatelessWidget {
   const RestaurantScreen({super.key});
 
   // Future<List<RestaurantModel>> paginateRestaurant(WidgetRef ref) async {
@@ -41,14 +39,16 @@ class RestaurantScreen extends ConsumerStatefulWidget {
   */
   // return ref.watch(restaurantRepositoryProvider).getRestaurantDetail(id: id);
   // }
-  @override
-  ConsumerState<RestaurantScreen> createState() => _RestaurantScreenState();
-}
 
-class _RestaurantScreenState extends ConsumerState<RestaurantScreen> {
-  final ScrollController controller = ScrollController();
+  // pagination_list_view에서 공통으로 만들어 사용해서 여기는 stateless이어도 됨
+  // @override
+  // ConsumerState<RestaurantScreen> createState() => _RestaurantScreenState();
+  // }
 
-  @override
+// class _RestaurantScreenState extends ConsumerState<RestaurantScreen> {
+//   final ScrollController controller = ScrollController();
+
+/*   @override
   void initState() {
     super.initState();
 
@@ -67,10 +67,31 @@ class _RestaurantScreenState extends ConsumerState<RestaurantScreen> {
     //       );
     // }
   }
-
+ */
   @override
   Widget build(BuildContext context) {
-    final data = ref.watch(restaurantProvider);
+    return PaginationListView(
+      provider: restaurantProvider,
+      itemBuilder: <RestaurantModel>(_, index, model) {
+        return GestureDetector(
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => RestaurantDetailScreen(
+                  id: model.id,
+                  name: model.name,
+                ),
+              ),
+            );
+          },
+          child: RestaurantCard.fromModel(
+            model: model,
+          ),
+        );
+      },
+    );
+
+    /*    final data = ref.watch(restaurantProvider);
     //완전 처음
     if (data is CursorPaginationLoading) {
       return Center(
@@ -160,6 +181,6 @@ class _RestaurantScreenState extends ConsumerState<RestaurantScreen> {
           return SizedBox(height: 16.0);
         },
       ),
-    );
+    ); */
   }
 }
