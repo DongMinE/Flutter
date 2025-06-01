@@ -14,7 +14,7 @@ class OrderProductModel {
     fromJson: DataUtils.pathToUrl,
   )
   final String imgUrl;
-  final String price;
+  final int price;
 
   OrderProductModel({
     required this.id,
@@ -43,7 +43,7 @@ class OrderProductAndCountModel {
 }
 
 @JsonSerializable()
-class OrderMoodel implements IModelWithId {
+class OrderModel implements IModelWithId {
   @override
   final String id;
   final List<OrderProductAndCountModel> products;
@@ -54,7 +54,7 @@ class OrderMoodel implements IModelWithId {
   )
   final DateTime createdAt;
 
-  OrderMoodel({
+  OrderModel({
     required this.id,
     required this.products,
     required this.totalPrice,
@@ -62,6 +62,6 @@ class OrderMoodel implements IModelWithId {
     required this.createdAt,
   });
 
-  factory OrderMoodel.fromJson(Map<String, dynamic> json) =>
-      _$OrderMoodelFromJson(json);
+  factory OrderModel.fromJson(Map<String, dynamic> json) =>
+      _$OrderModelFromJson(json);
 }

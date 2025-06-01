@@ -73,6 +73,8 @@ class RestaurantScreen extends ConsumerWidget {
  */
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.read(basketProvider.notifier).getBasket();
+
     return PaginationListView(
       provider: restaurantProvider,
       itemBuilder: <RestaurantModel>(_, index, model) {

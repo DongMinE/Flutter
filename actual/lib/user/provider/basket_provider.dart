@@ -2,6 +2,7 @@ import 'package:actual/product/model/product_model.dart';
 import 'package:actual/user/model/basket_item_model.dart';
 import 'package:actual/user/model/patch_basket_body.dart';
 import 'package:actual/user/repository/user_me_repository.dart';
+import 'package:debounce_throttle/debounce_throttle.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:collection/collection.dart';
 
@@ -17,10 +18,19 @@ final basketProvider =
 
 class BasketProvider extends StateNotifier<List<BasketItemModel>> {
   final UserMeRepository repository;
+  final updateBasketDebounce = Debouncer(
+    Duration(seconds: 1),
+    initialValue: null,
+    checkEquality: false,
+  );
 
   BasketProvider({
     required this.repository,
-  }) : super([]);
+  }) : super([]) {
+    updateBasketDebounce.values.listen((event) {
+      patchBasket();
+    });
+  }
 
   Future<void> getBasket() async {
     final resp = await repository.getBasket();
@@ -51,7 +61,7 @@ class BasketProvider extends StateNotifier<List<BasketItemModel>> {
     // 요청을 보내고 응답이 오면 캐시를 업데이트
     // 5초가 걸린다고 치면 일단 바로 UI와 캐시를 업데이트 하고 5초 뒤 실제 응답이 감
     // 이를 Optimistic response 라고 함
-    await patchBasket();
+    updateBasketDebounce.setValue(null);
   }
 
   Future<void> patchBasket() async {
@@ -104,6 +114,6 @@ class BasketProvider extends StateNotifier<List<BasketItemModel>> {
           )
           .toList();
     }
-    await patchBasket();
+    updateBasketDebounce.setValue(null);
   }
 }

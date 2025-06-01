@@ -2,7 +2,24 @@ import 'package:actual/common/model/cursor_pagination_model.dart';
 import 'package:actual/common/model/model_with_id.dart';
 import 'package:actual/common/model/pagination_params.dart';
 import 'package:actual/common/repository/base_pagination_repository.dart';
+import 'package:debounce_throttle/debounce_throttle.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+class _PaginationInfo {
+  final int fetchCount;
+  //true = 추가로 가져옴
+  //false = 새로고침(현재상태 덮어 씌움)
+  final bool fetchMore;
+  //강제 리로딩
+  //ture = CursorPaginationLoading()
+  final bool forceRefetch;
+
+  _PaginationInfo({
+    this.fetchCount = 20,
+    this.fetchMore = false,
+    this.forceRefetch = false,
+  });
+}
 
 /* 
   레스토랑프로바이더와 레이팅프로바이더처럼 하위동작이 모두 같도록 
@@ -16,10 +33,22 @@ class PaginationProvider<
     extends StateNotifier<CursorPaginationBase> {
   final U repository;
 
+  final paginationThrottle = Throttle(
+    Duration(seconds: 3),
+    initialValue: _PaginationInfo(),
+    checkEquality: false,
+  );
+
   PaginationProvider({
     required this.repository,
   }) : super(CursorPaginationLoading()) {
     paginate();
+
+    paginationThrottle.values.listen(
+      (state) {
+        _throttlePagination(state);
+      },
+    );
   }
 
   Future<void> paginate({
@@ -31,6 +60,18 @@ class PaginationProvider<
     //ture = CursorPaginationLoading()
     bool forceRefetch = false,
   }) async {
+    paginationThrottle.setValue(_PaginationInfo(
+      fetchCount: fetchCount,
+      fetchMore: fetchMore,
+      forceRefetch: forceRefetch,
+    ));
+  }
+
+  _throttlePagination(_PaginationInfo info) async {
+    final fetchCount = info.fetchCount;
+    final fetchMore = info.fetchMore;
+    final forceRefetch = info.forceRefetch;
+
     try {
       //페이지네이션 전(1페이지만 부름)
       // resp는 이미 CursorPagination<RestaurantModel>로 페이지네이션이 된 데이터

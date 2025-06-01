@@ -12,7 +12,7 @@ OrderProductModel _$OrderProductModelFromJson(Map<String, dynamic> json) =>
       name: json['name'] as String,
       detail: json['detail'] as String,
       imgUrl: DataUtils.pathToUrl(json['imgUrl'] as String),
-      price: json['price'] as String,
+      price: (json['price'] as num).toInt(),
     );
 
 Map<String, dynamic> _$OrderProductModelToJson(OrderProductModel instance) =>
@@ -39,7 +39,7 @@ Map<String, dynamic> _$OrderProductAndCountModelToJson(
       'count': instance.count,
     };
 
-OrderMoodel _$OrderMoodelFromJson(Map<String, dynamic> json) => OrderMoodel(
+OrderModel _$OrderModelFromJson(Map<String, dynamic> json) => OrderModel(
       id: json['id'] as String,
       products: (json['products'] as List<dynamic>)
           .map((e) =>
@@ -51,7 +51,7 @@ OrderMoodel _$OrderMoodelFromJson(Map<String, dynamic> json) => OrderMoodel(
       createdAt: DataUtils.stringToDateTime(json['createdAt'] as String),
     );
 
-Map<String, dynamic> _$OrderMoodelToJson(OrderMoodel instance) =>
+Map<String, dynamic> _$OrderModelToJson(OrderModel instance) =>
     <String, dynamic>{
       'id': instance.id,
       'products': instance.products,

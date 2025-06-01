@@ -22,14 +22,54 @@ class _OrderRepository implements OrderRepository {
   final ParseErrorLogger? errorLogger;
 
   @override
-  Future<OrderMoodel> postOrder({required PostOrderBody body}) async {
+  Future<CursorPagination<OrderModel>> paginate(
+      {PaginationParams? paginationParams = const PaginationParams()}) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    queryParameters.addAll(paginationParams?.toJson() ?? <String, dynamic>{});
+    queryParameters.removeWhere((k, v) => v == null);
+    final _headers = <String, dynamic>{r'accessToken': 'true'};
+    _headers.removeWhere((k, v) => v == null);
+    const Map<String, dynamic>? _data = null;
+    final _options = _setStreamType<CursorPagination<OrderModel>>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+        .compose(
+          _dio.options,
+          '/',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late CursorPagination<OrderModel> _value;
+    try {
+      _value = CursorPagination<OrderModel>.fromJson(
+        _result.data!,
+        (json) => OrderModel.fromJson(json as Map<String, dynamic>),
+      );
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
+    return _value;
+  }
+
+  @override
+  Future<OrderModel> postOrder({required PostOrderBody body}) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{r'accessToken': 'true'};
     _headers.removeWhere((k, v) => v == null);
     final _data = <String, dynamic>{};
     _data.addAll(body.toJson());
-    final _options = _setStreamType<OrderMoodel>(Options(
+    final _options = _setStreamType<OrderModel>(Options(
       method: 'POST',
       headers: _headers,
       extra: _extra,
@@ -46,9 +86,9 @@ class _OrderRepository implements OrderRepository {
           baseUrl,
         )));
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
-    late OrderMoodel _value;
+    late OrderModel _value;
     try {
-      _value = OrderMoodel.fromJson(_result.data!);
+      _value = OrderModel.fromJson(_result.data!);
     } on Object catch (e, s) {
       errorLogger?.logError(e, s, _options);
       rethrow;
