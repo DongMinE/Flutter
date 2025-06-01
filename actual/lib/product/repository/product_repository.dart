@@ -16,7 +16,7 @@ final productRepositoryProvider = Provider<ProductRepository>((ref) {
 });
 
 @RestApi()
-abstract interface class ProductRepository
+abstract class ProductRepository
     implements IBasePaginationRepository<ProductModel> {
   factory ProductRepository(Dio dio, {String baseUrl}) = _ProductRepository;
 

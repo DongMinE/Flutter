@@ -1,5 +1,4 @@
 import 'package:actual/common/model/cursor_pagination_model.dart';
-import 'package:actual/common/model/pagination_params.dart';
 import 'package:actual/common/provider/pagination_provider.dart';
 import 'package:actual/product/model/product_model.dart';
 import 'package:actual/product/repository/product_repository.dart';

@@ -1,7 +1,9 @@
+import 'package:actual/common/const/colors.dart';
 import 'package:actual/common/layout/default_layout.dart';
 import 'package:actual/common/model/cursor_pagination_model.dart';
 import 'package:actual/common/utils/pagination_utils.dart';
 import 'package:actual/product/component/product_card.dart';
+import 'package:actual/product/model/product_model.dart';
 import 'package:actual/rating/component/rating_card.dart';
 import 'package:actual/rating/model/rating_model.dart';
 import 'package:actual/restaurant/component/restaurant_card.dart';
@@ -9,17 +11,21 @@ import 'package:actual/restaurant/model/restaurant_detail_model.dart';
 import 'package:actual/restaurant/model/restaurant_model.dart';
 import 'package:actual/restaurant/provider/restaurant_provider.dart';
 import 'package:actual/restaurant/provider/restaurant_rating_provider.dart';
+import 'package:actual/restaurant/view/basket_screen.dart';
+import 'package:actual/user/provider/basket_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:badges/badges.dart' as badges;
+import 'package:go_router/go_router.dart';
 
 class RestaurantDetailScreen extends ConsumerStatefulWidget {
+  static String get routeName => 'restaurantDetail';
+
   final String id;
-  final String name;
 
   const RestaurantDetailScreen({
     required this.id,
-    required this.name,
     super.key,
   });
 
@@ -51,6 +57,7 @@ class _RestaurantDetailScreenState
     //전체 리스트 중 id에 맞는 가게만 가져와서 디테일 화면에 로딩이 없음(이미 있음)
     final state = ref.watch(restaurantDetailProvider(widget.id));
     final ratingsState = ref.watch(restaurantRatingProvider(widget.id));
+    final basket = ref.watch(basketProvider);
 
     if (state == null) {
       return DefaultLayout(
@@ -60,8 +67,30 @@ class _RestaurantDetailScreenState
       );
     }
     return DefaultLayout(
-      title: widget.name,
+      title: state.name,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          context.pushNamed(BasketScreen.routeName);
+        },
+        backgroundColor: PRIMARY_COLOR,
+        child: badges.Badge(
+          showBadge: basket.isNotEmpty,
+          // badgeContent: Text(ref.watch(basketProvider).length.toString()),
+          badgeContent: Text(
+            basket
+                .fold(0,
+                    (previousValue, element) => previousValue + element.count)
+                .toString(),
+            style: TextStyle(color: PRIMARY_COLOR, fontSize: 10.0),
+          ),
+          badgeStyle: badges.BadgeStyle(
+            badgeColor: Colors.white,
+          ),
+          child: Icon(Icons.shopping_basket_outlined),
+        ),
+      ),
       //retrofit으로 반환받는 타입이 RestaurantDetailModel이므로 Map(String, dynamic)이 아님
+
       child: CustomScrollView(
         controller: controller,
         //Sliver는 ListView에 비해 유연하며 복잡할수록 유리
@@ -73,7 +102,10 @@ class _RestaurantDetailScreenState
           if (state is! RestaurantDetailModel) renderLoading(),
           if (state is RestaurantDetailModel) renderLabel(),
           if (state is RestaurantDetailModel)
-            renderProduct(products: state.products),
+            renderProduct(
+              products: state.products,
+              restaurant: state,
+            ),
           if (ratingsState is CursorPagination<RatingModel>)
             renderRatings(
               models: ratingsState.data,
@@ -174,7 +206,10 @@ class _RestaurantDetailScreenState
     );
   }
 
-  renderProduct({required List<RestaurantProductModel> products}) {
+  renderProduct({
+    required List<RestaurantProductModel> products,
+    required RestaurantModel restaurant,
+  }) {
     return SliverPadding(
       padding: EdgeInsets.symmetric(horizontal: 16.0),
       // ListView, SliverList, SliverChildListDelegate는 모든 아이템 빌드
@@ -183,10 +218,24 @@ class _RestaurantDetailScreenState
         delegate: SliverChildBuilderDelegate(
           (context, index) {
             final model = products[index];
-            return Padding(
-              padding: const EdgeInsets.only(top: 16.0),
-              child: ProductCard.fromRestaurantProductModel(
-                model: model,
+            return InkWell(
+              onTap: () {
+                ref.read(basketProvider.notifier).addToBasket(
+                      product: ProductModel(
+                        id: model.id,
+                        name: model.name,
+                        imgUrl: model.imgUrl,
+                        detail: model.detail,
+                        price: model.price,
+                        restaurant: restaurant,
+                      ),
+                    );
+              },
+              child: Padding(
+                padding: const EdgeInsets.only(top: 16.0),
+                child: ProductCard.fromRestaurantProductModel(
+                  model: model,
+                ),
               ),
             );
           },

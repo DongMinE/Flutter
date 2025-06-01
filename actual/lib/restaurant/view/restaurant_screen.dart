@@ -2,9 +2,12 @@ import 'package:actual/common/component/pagination_list_view.dart';
 import 'package:actual/restaurant/component/restaurant_card.dart';
 import 'package:actual/restaurant/provider/restaurant_provider.dart';
 import 'package:actual/restaurant/view/restaurant_detail_screen.dart';
+import 'package:actual/user/provider/basket_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
-class RestaurantScreen extends StatelessWidget {
+class RestaurantScreen extends ConsumerWidget {
   const RestaurantScreen({super.key});
 
   // Future<List<RestaurantModel>> paginateRestaurant(WidgetRef ref) async {
@@ -69,19 +72,21 @@ class RestaurantScreen extends StatelessWidget {
   }
  */
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return PaginationListView(
       provider: restaurantProvider,
       itemBuilder: <RestaurantModel>(_, index, model) {
         return GestureDetector(
           onTap: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => RestaurantDetailScreen(
-                  id: model.id,
-                  name: model.name,
-                ),
-              ),
+            //path 방법
+            // context.go('/restaurant/${model.id}');
+
+            //named 방법
+            context.goNamed(
+              RestaurantDetailScreen.routeName,
+              pathParameters: {
+                'rid': model.id,
+              },
             );
           },
           child: RestaurantCard.fromModel(

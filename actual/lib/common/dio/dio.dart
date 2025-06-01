@@ -1,5 +1,6 @@
 import 'package:actual/common/const/data.dart';
 import 'package:actual/common/secure_storage/secure_storage.dart';
+import 'package:actual/user/provider/auth_provider.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -10,9 +11,7 @@ final dioProvider = Provider<Dio>((ref) {
   final storage = ref.watch(secureStorageProvider);
 
   dio.interceptors.add(
-    CustomInterceptor(
-      storage: storage,
-    ),
+    CustomInterceptor(storage: storage, ref: ref),
   );
 
   return dio;
@@ -20,9 +19,11 @@ final dioProvider = Provider<Dio>((ref) {
 
 class CustomInterceptor extends Interceptor {
   final FlutterSecureStorage storage;
+  final Ref ref;
 
   CustomInterceptor({
     required this.storage,
+    required this.ref,
   });
 
   // 1)요청
@@ -31,7 +32,6 @@ class CustomInterceptor extends Interceptor {
   void onRequest(
       RequestOptions options, RequestInterceptorHandler handler) async {
     print('[REQ] [${options.method}] ${options.uri}');
-
     // accessToken
     if (options.headers['accessToken'] == 'true') {
       options.headers.remove('accessToken');
@@ -55,6 +55,10 @@ class CustomInterceptor extends Interceptor {
       });
     }
 
+    // 최종 헤더와 바디 출력
+    print('최종 요청 헤더: ${options.headers}');
+    print('최종 요청 바디: ${options.data}');
+
     return super.onRequest(options, handler);
   }
 
@@ -63,6 +67,10 @@ class CustomInterceptor extends Interceptor {
   void onResponse(Response response, ResponseInterceptorHandler handler) {
     print(
         '[RES] [${response.requestOptions.method}] ${response.requestOptions.uri}');
+
+    // 응답 데이터와 상태 코드 출력
+    // print('응답 상태 코드: ${response.statusCode}');
+    // print('응답 데이터: ${response.data}');
 
     super.onResponse(response, handler);
   }
@@ -112,6 +120,8 @@ class CustomInterceptor extends Interceptor {
         //에러로 왔지만 성공된 요청으로 클라이언트에 응답
         return handler.resolve(response);
       } on DioException catch (e) {
+        ref.read(authProvider.notifier).logout();
+
         return handler.reject(e);
       }
     }
